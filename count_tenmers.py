@@ -50,9 +50,39 @@ def locate_leaders(filename):
                 bamfiles_list.append((line[9])[0:10])
                 bamfiles_list2.append((line[9])[0:21])
 
+
+
     donor = (re.split('%20|%3a|%29', filename))[8]
     sample = (re.split('%20|%3a|%29', filename))[10]
     output = (output_path + '/%s_%s_tenmers_SC.tsv') % (sample, donor)
+
+
+    segments = output_path + '3_segment/publish/segment/'
+    segmented = segments + '20170718_GCAAAGCAGG_segmented.txt'
+
+    flu_search = ('GCAAAAGCAGG_' + '%s_%s') % (sample, donor)
+    flu_search = flu_search.replace('onor', '')
+
+    pre_query_flu_list = []
+	with open(segmented, 'r') as inF:
+	next(inF)
+	for line in inF:
+		if flu_search in line:
+			leader = (line.split('\t'))[3]
+			if len(leader) < 10:
+				pass
+			else:
+				if len(leader) >= 10:
+					pre_query_flu_list.append(leader)
+	query_flu_list = []
+	counted = Counter(pre_query_flu_list)
+	counted.keys()
+	for x in counted:
+		query_flu_list.append([str(x), str(counted[x])])
+
+	print len(pre_query_flu_list)
+	print len(query_flu_list)
+
 
     print (('%s has %s entries') % (filename, len(bamfiles_list2)))
 
@@ -69,11 +99,7 @@ def locate_leaders(filename):
         o.write(str(query_list[i]) + '\t' + str(total) + '\t' + str(total_flu))
         o.write('\n')
 
-    slack = Slacker('xoxp-56103715248-56114624145-154905509446-72c754c99fabcd5e9e1772648f3ee7c4')
-    msg = ("%s %s is finished"%(sample, donor))
-    slack.chat.post_message('@sclohisey', msg)
-    return output
-
+  
 ###############################################################################
 # this part take s along time and the time differs between samfile.
 '''
