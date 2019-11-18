@@ -25,7 +25,7 @@ with open(leader_file, 'r') as inF:
         line_split = line.strip()
         tenmer = line_split
         query_list.append(tenmer)
-        query_flu_list.append(tenmer + 'GCAAAAGCAGG')
+        #query_flu_list.append(tenmer + 'GCAAAAGCAGG')
 
 dirs = os.listdir(path)
 for fle in dirs:
@@ -48,7 +48,7 @@ def locate_leaders(filename):
             if 'VHE' in line:
                 line = line.split('\t')
                 bamfiles_list.append((line[9])[0:10])
-                bamfiles_list2.append((line[9])[0:21])
+                #bamfiles_list2.append((line[9])[0:21])
 
 
 
@@ -56,35 +56,26 @@ def locate_leaders(filename):
     sample = (re.split('%20|%3a|%29', filename))[10]
     output = (output_path + '/%s_%s_tenmers_SC.tsv') % (sample, donor)
 
-
     segments = output_path + '3_segment/publish/segment/'
     segmented = segments + '20170718_GCAAAGCAGG_segmented.txt'
 
     flu_search = ('GCAAAAGCAGG_' + '%s_%s') % (sample, donor)
     flu_search = flu_search.replace('onor', '')
 
-    pre_query_flu_list = []
-	with open(segmented, 'r') as inF:
-	next(inF)
-	for line in inF:
-		if flu_search in line:
-			leader = (line.split('\t'))[3]
-			if len(leader) < 10:
-				pass
-			else:
-				if len(leader) >= 10:
-					pre_query_flu_list.append(leader)
-	query_flu_list = []
-	counted = Counter(pre_query_flu_list)
-	counted.keys()
-	for x in counted:
-		query_flu_list.append([str(x), str(counted[x])])
-
-	print len(pre_query_flu_list)
-	print len(query_flu_list)
+    query_flu_list = []
+    with open(segmented, 'r') as inF:
+        next(inF)
+        for line in inF:
+            if flu_search in line:
+                leader = (line.split('\t'))[3]
+                if len(leader) < 10:
+                    pass
+                else:
+                    if len(leader) >= 10:
+                        query_flu_list.append(leader[:10])
 
 
-    print (('%s has %s entries') % (filename, len(bamfiles_list2)))
+    #print (('%s has %s entries') % (filename, len(bamfiles_list2)))
 
     f = open(output, 'r')
     lines = f.readlines()
@@ -95,20 +86,20 @@ def locate_leaders(filename):
     o = open(output, 'ab+')
     for i in range(length, len(query_list)):
         total = bamfiles_list.count(query_list[i])
-        total_flu = bamfiles_list2.count(query_flu_list[i])
+        total_flu = bamfiles_list.count(query_flu_list[i])
         o.write(str(query_list[i]) + '\t' + str(total) + '\t' + str(total_flu))
         o.write('\n')
 
   
 ###############################################################################
 # this part take s along time and the time differs between samfile.
-'''
+
 pool = mp.Pool(processes=16)
 results = pool.map(locate_leaders, file_list)
-'''
+
 #locate_leaders('Monocyte-derived%20macrophages%20response%20to%20udorn%20influenza%20infection%2c%2002hr00min%2c%20donor2%20%28150_120%3aUd_2h%29.CNhs13647.13318-143A6.hg19.nobarcode.sam')
 ###############################################################################
-
+'''
 ###############################################
 import numpy as np 
 from scipy.stats import stats
@@ -135,7 +126,7 @@ for fle in dirs:
 
 print files
 
-'''
+
 with open(this_seq_snatched) as inF:
     for line in inF:
         linea = (line.strip()).split('\t')
@@ -209,5 +200,4 @@ for tenmer in tenmers:
         print oddsratio, pvalue
 
 ###############################################
-
 '''
