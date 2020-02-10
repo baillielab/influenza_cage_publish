@@ -3,6 +3,7 @@ from collections import Counter
 import os
 import time
 import re
+import random
 import logging
 from functools import reduce
 #from slacker import Slacker
@@ -48,19 +49,20 @@ def locate_leaders(filename):
             if 'VHE' in line:
                 line = line.split('\t')
                 bamfiles_list.append((line[9])[0:10])
-                #bamfiles_list2.append((line[9])[0:21])
-
-
+                #bamfiles_list2.append((line[9]))
 
     donor = (re.split('%20|%3a|%29', filename))[8]
     sample = (re.split('%20|%3a|%29', filename))[10]
-    output = (output_path + '/%s_%s_tenmers_SC.tsv') % (sample, donor)
-
+    output = (output_path + '%s_%s_tenmers_SC_nov.tsv') % (sample, donor)
     segments = output_path + '3_segment/publish/segment/'
     segmented = segments + '20170718_GCAAAGCAGG_segmented.txt'
-
     flu_search = ('GCAAAAGCAGG_' + '%s_%s') % (sample, donor)
     flu_search = flu_search.replace('onor', '')
+
+    print flu_search
+
+    # use segmented file to find leaders
+    # that is, find sequences that contain the promoter
 
     query_flu_list = []
     with open(segmented, 'r') as inF:
@@ -74,21 +76,40 @@ def locate_leaders(filename):
                     if len(leader) >= 10:
                         query_flu_list.append(leader[:10])
 
-
     #print (('%s has %s entries') % (filename, len(bamfiles_list2)))
+    #f = open(output, 'r')
+    #lines = f.readlines()
+    #f.close()
+    #length = len(lines)
 
-    f = open(output, 'r')
-    lines = f.readlines()
-    f.close()
+    #  the lists aren't in the same order...
 
-    length = len(lines)
+    length1 = len(random.choice(query_list))
+    length2 = len(random.choice(query_flu_list))
 
-    o = open(output, 'ab+')
-    for i in range(length, len(query_list)):
-        total = bamfiles_list.count(query_list[i])
-        total_flu = bamfiles_list.count(query_flu_list[i])
-        o.write(str(query_list[i]) + '\t' + str(total) + '\t' + str(total_flu))
-        o.write('\n')
+    if length1 == 10:
+        print 'OK'
+    else:
+        print 'length of query is not 10'
+
+    if length2 == length1:
+        print 'OK'
+    else:
+        print 'problem with query lists'
+
+    o = open(output, 'w+')
+    for i in range(0, len(query_list)):
+        total = bamfiles_list.count(query_list[i]) # all tenmers in a sample
+        total_flu = query_flu_list.count(query_list[i]) # tenmers in sample ass. with promoter
+        print i 
+        print str(total)
+        print str(total_flu)
+
+        if total >= total_flu:
+            o.write(str(query_list[i]) + '\t' + str(total) + '\t' + str(total_flu))
+            o.write('\n')
+        else:
+            print 'I say, something *has* gone wrong'
 
   
 ###############################################################################
